@@ -14,9 +14,7 @@ namespace CancellationTokenExample
 
             var tokenSource = new CancellationTokenSource();
             var factory = new TaskFactory(tokenSource.Token);
-            var tasks = new List<Task<int[]>>();
-
-            CreateTasks(tokenSource, rnd, lockObj, tasks, factory);
+            var tasks = CreateTasks(tokenSource, rnd, lockObj, factory);
 
             try
             {
@@ -59,15 +57,19 @@ namespace CancellationTokenExample
             }
         }
 
-        public static void CreateTasks(CancellationTokenSource tokenSource, Random rnd, object lockObj, List<Task<int[]>> tasks, TaskFactory factory)
+        public static List<Task<int[]>> CreateTasks(CancellationTokenSource tokenSource, Random rnd, object lockObj, TaskFactory factory)
         {
+            var tasks = new List<Task<int[]>>();
+
             for (int taskCtr = 0; taskCtr <= 10; taskCtr++)
             {
-                tasks.Add(factory.StartNew(() =>
-                {
-                    return GenerateValues(tokenSource, rnd, lockObj, taskCtr + 1);
-                }, tokenSource.Token));
+                tasks.Add(
+                    factory.StartNew(
+                        () => { return GenerateValues(tokenSource, rnd, lockObj, taskCtr + 1); },
+                        tokenSource.Token));
             }
+
+            return tasks;
         }
 
         public static int[] GenerateValues(CancellationTokenSource tokenSource, Random rnd, object lockObj, int iteration)

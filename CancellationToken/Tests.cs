@@ -17,9 +17,8 @@ namespace CancellationTokenExample
             var lockObj = new object();
             var tokenSource = new CancellationTokenSource();
             var factory = new TaskFactory(tokenSource.Token);
-            var tasks = new List<Task<int[]>>();
 
-            Program.CreateTasks(tokenSource, rnd, lockObj, tasks, factory);
+            var tasks = Program.CreateTasks(tokenSource, rnd, lockObj, factory);
             Assert.IsNotEmpty(tasks);
         }
 
