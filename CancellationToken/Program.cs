@@ -30,23 +30,16 @@ namespace CancellationTokenExample
 
             try
             {
-                Task<double> fTask = factory.ContinueWhenAll(tasks.ToArray(),
-                   (results) =>
-                   {
-                       Console.WriteLine("Calculating overall mean...");
-                       long sum = 0;
-                       int n = 0;
-                       foreach (var t in results)
-                       {
-                           foreach (var r in t.Result)
-                           {
-                               sum += r;
-                               n++;
-                           }
-                       }
-                       return sum / (double)n;
-                   }, tokenSource.Token);
-                Console.WriteLine("The mean is {0}.", fTask.Result);
+                Task<double> allTasks = factory.ContinueWhenAll(
+                    tasks.ToArray(),
+                    (results) =>
+                    {
+                        Console.WriteLine("Calculating overall mean...");
+                        return CalculateMean(results);
+                    },
+                    tokenSource.Token);
+
+                Console.WriteLine("The mean is {0}.", allTasks.Result);
             }
             catch (AggregateException ae)
             {
@@ -54,7 +47,8 @@ namespace CancellationTokenExample
                 {
                     if (e is TaskCanceledException)
                     {
-                        Console.WriteLine("Unable to compute mean: {0}",
+                        Console.WriteLine(
+                            "Unable to compute mean: {0}",
                             ((TaskCanceledException)e).Message);
                     }
                     else
@@ -67,6 +61,23 @@ namespace CancellationTokenExample
             {
                 tokenSource.Dispose();
             }
+        }
+
+        private static double CalculateMean(Task<int[]>[] results)
+        {
+            long sum = 0;
+            int n = 0;
+
+            foreach (var t in results)
+            {
+                foreach (var r in t.Result)
+                {
+                    sum += r;
+                    n++;
+                }
+            }
+
+            return sum / (double)n;
         }
 
         public static List<Task<int[]>> CreateTasks(CancellationTokenSource tokenSource, SharedRandom sharedRandom, TaskFactory factory)
