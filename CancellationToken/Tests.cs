@@ -30,8 +30,7 @@ namespace CancellationTokenExample
             var tokenSource = new CancellationTokenSource();
             var factory = new TaskFactory(tokenSource.Token);
 
-            int iteration = 7;
-            var values = Program.GenerateValues(tokenSource, rnd, lockObj, iteration);
+            var values = Program.GenerateValues(tokenSource, rnd, lockObj);
             Assert.IsNotEmpty(values);
         }
     }

@@ -63,22 +63,21 @@ namespace CancellationTokenExample
 
             for (int taskCtr = 0; taskCtr <= 10; taskCtr++)
             {
-                var iteration = taskCtr + 1;
                 tasks.Add(
                     factory.StartNew(
-                        () => { return GenerateValues(tokenSource, rnd, lockObj, iteration); },
+                        () => { return GenerateValues(tokenSource, rnd, lockObj); },
                         tokenSource.Token));
             }
 
             return tasks;
         }
 
-        public static int[] GenerateValues(CancellationTokenSource tokenSource, Random rnd, object lockObj, int iteration)
+        public static int[] GenerateValues(CancellationTokenSource tokenSource, Random rnd, object lockObj)
         {
             int value;
             int[] values = new int[10];
 
-            Console.WriteLine("Starting task {0}", iteration);
+            Console.WriteLine("Starting task {0}", Task.CurrentId);
             for (int ctr = 1; ctr <= 10; ctr++)
             {
                 lock (lockObj)
@@ -89,7 +88,7 @@ namespace CancellationTokenExample
                 if (value == 0)
                 {
                     tokenSource.Cancel();
-                    Console.WriteLine("Cancelling at task {0}", iteration);
+                    Console.WriteLine("Cancelling at task {0}", Task.CurrentId);
                     break;
                 }
 
