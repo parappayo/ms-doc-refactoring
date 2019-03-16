@@ -14,7 +14,10 @@ The goal of this project is to learn, demonstrate, and exercise refactoring prac
 # Helpful Resources
 
 * [Refactorings Catalog](https://refactoring.com/catalog/) by Martin Fowler
+* [Get a Whiff of This](https://www.youtube.com/watch?v=PJjHfa5yxlU) by Sandi Metz
+* [Working Effectively With Legacy Code](http://wiki.c2.com/?WorkingEffectivelyWithLegacyCode) by Michael Feathers
 * [.NET Core CLI tools](https://docs.microsoft.com/en-us/dotnet/core/tools/?tabs=netcore2x)
+* [NUnit](https://github.com/nunit/docs/wiki)
+* [Autofac](https://autofaccn.readthedocs.io/en/latest/index.html)
 * [Oh shit, git!](http://ohshitgit.com/) by Julia Evans
 * [Makefiles, Best Practices](https://danyspin97.org/blog/makefiles-best-practices/) by Danilo Spinella
-* [Get a Whiff of This](https://www.youtube.com/watch?v=PJjHfa5yxlU) by Sandi Metz
