@@ -35,7 +35,7 @@ namespace CancellationTokenExample
                     (results) =>
                     {
                         Console.WriteLine("Calculating overall mean...");
-                        return CalculateMean(results);
+                        return CalculateMean(Flatten(results));
                     },
                     tokenSource.Token);
 
@@ -63,18 +63,30 @@ namespace CancellationTokenExample
             }
         }
 
-        private static double CalculateMean(Task<int[]>[] results)
+        private static T[] Flatten<T>(Task<T[]>[] tasks)
+        {
+            var flatResults = new List<T>();
+
+            foreach (var task in tasks)
+            {
+                foreach (var result in task.Result)
+                {
+                    flatResults.Add(result);
+                }
+            }
+
+            return flatResults.ToArray();
+        }
+
+        private static double CalculateMean(int[] values)
         {
             long sum = 0;
             int n = 0;
 
-            foreach (var t in results)
+            foreach (var v in values)
             {
-                foreach (var r in t.Result)
-                {
-                    sum += r;
-                    n++;
-                }
+                sum += v;
+                n++;
             }
 
             return sum / (double)n;
