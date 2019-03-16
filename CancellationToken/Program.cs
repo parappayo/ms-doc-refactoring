@@ -25,12 +25,18 @@ namespace CancellationTokenExample
         {
             var sharedRandom = new SharedRandom();
             var tokenSource = new CancellationTokenSource();
-            var factory = new TaskFactory(tokenSource.Token);
-            var tasks = CreateTasks(tokenSource, sharedRandom, factory);
+            var taskFactory = new TaskFactory(tokenSource.Token);
+            int taskCount = 10;
+
+            var tasks = CreateTasks(
+                () => { return GenerateValues(tokenSource, sharedRandom); },
+                taskCount,
+                taskFactory,
+                tokenSource);
 
             try
             {
-                Task<double> allTasks = factory.ContinueWhenAll(
+                Task<double> allTasks = taskFactory.ContinueWhenAll(
                     tasks.ToArray(),
                     (results) =>
                     {
@@ -92,15 +98,15 @@ namespace CancellationTokenExample
             return sum / (double)n;
         }
 
-        public static List<Task<int[]>> CreateTasks(CancellationTokenSource tokenSource, SharedRandom sharedRandom, TaskFactory factory)
+        public static List<Task<T>> CreateTasks<T>(Func<T> taskFunc, int count, TaskFactory factory, CancellationTokenSource tokenSource)
         {
-            var tasks = new List<Task<int[]>>();
+            var tasks = new List<Task<T>>();
 
-            for (int taskCtr = 0; taskCtr <= 10; taskCtr++)
+            for (int i = 0; i <= count; i++)
             {
                 tasks.Add(
                     factory.StartNew(
-                        () => { return GenerateValues(tokenSource, sharedRandom); },
+                        taskFunc,
                         tokenSource.Token));
             }
 

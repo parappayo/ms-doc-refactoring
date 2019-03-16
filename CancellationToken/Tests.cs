@@ -15,9 +15,14 @@ namespace CancellationTokenExample
         {
             var sharedRandom = new SharedRandom();
             var tokenSource = new CancellationTokenSource();
-            var factory = new TaskFactory(tokenSource.Token);
+            var taskFactory = new TaskFactory(tokenSource.Token);
+            int taskCount = 10;
 
-            var tasks = Program.CreateTasks(tokenSource, sharedRandom, factory);
+            var tasks = Program.CreateTasks(
+                () => { return Program.GenerateValues(tokenSource, sharedRandom); },
+                taskCount,
+                taskFactory,
+                tokenSource);
             Assert.IsNotEmpty(tasks);
         }
 
