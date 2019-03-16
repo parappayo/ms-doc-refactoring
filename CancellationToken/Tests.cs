@@ -11,14 +11,14 @@ namespace CancellationTokenExample
     public class Tests
     {
         [Test]
-        public void CreateTasks_PopulatesTasks()
+        public void StartTasks_PopulatesTasks()
         {
             var sharedRandom = new SharedRandom();
             var tokenSource = new CancellationTokenSource();
             var taskFactory = new TaskFactory(tokenSource.Token);
             int taskCount = 10;
 
-            var tasks = Program.CreateTasks(
+            var tasks = Program.StartTasks(
                 () => { return Program.GenerateValues(tokenSource, sharedRandom); },
                 taskCount,
                 taskFactory,

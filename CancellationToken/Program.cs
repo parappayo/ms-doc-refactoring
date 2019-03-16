@@ -23,29 +23,26 @@ namespace CancellationTokenExample
     {
         public static void Main()
         {
-            var sharedRandom = new SharedRandom();
             var tokenSource = new CancellationTokenSource();
-            var taskFactory = new TaskFactory(tokenSource.Token);
+            var sharedRandom = new SharedRandom();
             int taskCount = 10;
-
-            var tasks = CreateTasks(
-                () => { return GenerateValues(tokenSource, sharedRandom); },
-                taskCount,
-                taskFactory,
-                tokenSource);
 
             try
             {
-                Task<double> allTasks = taskFactory.ContinueWhenAll(
-                    tasks.ToArray(),
+                double result = RunTasks(
+                    () =>
+                    {
+                        return GenerateValues(tokenSource, sharedRandom);
+                    },
                     (results) =>
                     {
                         Console.WriteLine("Calculating overall mean...");
                         return CalculateMean(Flatten(results));
                     },
-                    tokenSource.Token);
+                    tokenSource,
+                    taskCount);
 
-                Console.WriteLine("The mean is {0}.", allTasks.Result);
+                Console.WriteLine("The mean is {0}.", result);
             }
             catch (AggregateException ae)
             {
@@ -63,13 +60,9 @@ namespace CancellationTokenExample
                     }
                 }
             }
-            finally
-            {
-                tokenSource.Dispose();
-            }
         }
 
-        private static T[] Flatten<T>(Task<T[]>[] tasks)
+        public static T[] Flatten<T>(Task<T[]>[] tasks)
         {
             var flatResults = new List<T>();
 
@@ -84,7 +77,7 @@ namespace CancellationTokenExample
             return flatResults.ToArray();
         }
 
-        private static double CalculateMean(int[] values)
+        public static double CalculateMean(int[] values)
         {
             long sum = 0;
             int n = 0;
@@ -98,7 +91,34 @@ namespace CancellationTokenExample
             return sum / (double)n;
         }
 
-        public static List<Task<T>> CreateTasks<T>(Func<T> taskFunc, int count, TaskFactory factory, CancellationTokenSource tokenSource)
+        public static TResult RunTasks<T, TResult>(
+            Func<T> taskFunc,
+            Func<Task<T>[], TResult> continuationFunc,
+            CancellationTokenSource tokenSource,
+            int taskCount)
+        {
+            var taskFactory = new TaskFactory(tokenSource.Token);
+
+            try
+            {
+                Task<TResult> allTasks = taskFactory.ContinueWhenAll(
+                    StartTasks(taskFunc, taskCount, taskFactory, tokenSource).ToArray(),
+                    continuationFunc,
+                    tokenSource.Token);
+
+                return allTasks.Result;
+            }
+            finally
+            {
+                tokenSource.Dispose();
+            }
+        }
+
+        public static List<Task<T>> StartTasks<T>(
+            Func<T> taskFunc,
+            int count,
+            TaskFactory factory,
+            CancellationTokenSource tokenSource)
         {
             var tasks = new List<Task<T>>();
 
