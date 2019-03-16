@@ -1,11 +1,18 @@
 
-./obj/Debug/netcoreapp2.1/*.dll: *.cs
-	dotnet build CancellationTokenExample.csproj
+PROJECT?=CancellationTokenExample
+FRAMEWORK?=netcoreapp2.1
+CONFIGURATION?=Debug
 
-build: ./obj/Debug/netcoreapp2.1/*.dll
+BIN?=bin/${CONFIGURATION}/${FRAMEWORK}
+OBJ?=obj/${CONFIGURATION}/${FRAMEWORK}
+
+./${OBJ}/*.dll: *.cs
+	dotnet build -c ${CONFIGURATION} ${PROJECT}.csproj
+
+build: ./${OBJ}/*.dll
 
 clean:
-	rm -rf ./obj
+	dotnet clean -c ${CONFIGURATION}
 
 run: build
-	dotnet ./bin/Debug/netcoreapp2.1/CancellationTokenExample.dll
+	dotnet ./${BIN}/${PROJECT}.dll
