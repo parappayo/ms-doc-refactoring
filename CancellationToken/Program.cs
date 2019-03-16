@@ -5,16 +5,28 @@ using System.Threading.Tasks;
 
 namespace CancellationTokenExample
 {
+    public class SharedRandom
+    {
+        private Random Random = new Random();
+        private object Lock = new object();
+
+        public int Next(int minValue, int maxValue)
+        {
+            lock (Lock)
+            {
+                return Random.Next(minValue, maxValue);
+            }
+        }
+    }
+
     public class Program
     {
         public static void Main()
         {
-            var rnd = new Random();
-            var lockObj = new object();
-
+            var sharedRandom = new SharedRandom();
             var tokenSource = new CancellationTokenSource();
             var factory = new TaskFactory(tokenSource.Token);
-            var tasks = CreateTasks(tokenSource, rnd, lockObj, factory);
+            var tasks = CreateTasks(tokenSource, sharedRandom, factory);
 
             try
             {
@@ -57,7 +69,7 @@ namespace CancellationTokenExample
             }
         }
 
-        public static List<Task<int[]>> CreateTasks(CancellationTokenSource tokenSource, Random rnd, object lockObj, TaskFactory factory)
+        public static List<Task<int[]>> CreateTasks(CancellationTokenSource tokenSource, SharedRandom sharedRandom, TaskFactory factory)
         {
             var tasks = new List<Task<int[]>>();
 
@@ -65,14 +77,14 @@ namespace CancellationTokenExample
             {
                 tasks.Add(
                     factory.StartNew(
-                        () => { return GenerateValues(tokenSource, rnd, lockObj); },
+                        () => { return GenerateValues(tokenSource, sharedRandom); },
                         tokenSource.Token));
             }
 
             return tasks;
         }
 
-        public static int[] GenerateValues(CancellationTokenSource tokenSource, Random rnd, object lockObj)
+        public static int[] GenerateValues(CancellationTokenSource tokenSource, SharedRandom sharedRandom)
         {
             int value;
             int[] values = new int[10];
@@ -80,10 +92,7 @@ namespace CancellationTokenExample
             Console.WriteLine("Starting task {0}", Task.CurrentId);
             for (int ctr = 1; ctr <= 10; ctr++)
             {
-                lock (lockObj)
-                {
-                    value = rnd.Next(0, 101);
-                }
+                value = sharedRandom.Next(0, 101);
 
                 if (value == 0)
                 {
