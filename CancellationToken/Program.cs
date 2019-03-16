@@ -63,9 +63,10 @@ namespace CancellationTokenExample
 
             for (int taskCtr = 0; taskCtr <= 10; taskCtr++)
             {
+                var iteration = taskCtr + 1;
                 tasks.Add(
                     factory.StartNew(
-                        () => { return GenerateValues(tokenSource, rnd, lockObj, taskCtr + 1); },
+                        () => { return GenerateValues(tokenSource, rnd, lockObj, iteration); },
                         tokenSource.Token));
             }
 
@@ -77,6 +78,7 @@ namespace CancellationTokenExample
             int value;
             int[] values = new int[10];
 
+            Console.WriteLine("Starting task {0}", iteration);
             for (int ctr = 1; ctr <= 10; ctr++)
             {
                 lock (lockObj)
