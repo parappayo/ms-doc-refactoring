@@ -9,15 +9,14 @@ namespace CancellationTokenExample
     {
         public static void Main()
         {
-            // Define the cancellation token.
-            CancellationTokenSource source = new CancellationTokenSource();
-            CancellationToken token = source.Token;
+            CancellationTokenSource tokenSource = new CancellationTokenSource();
 
             Random rnd = new Random();
             Object lockObj = new Object();
 
             List<Task<int[]>> tasks = new List<Task<int[]>>();
-            TaskFactory factory = new TaskFactory(token);
+            TaskFactory factory = new TaskFactory(tokenSource.Token);
+
             for (int taskCtr = 0; taskCtr <= 10; taskCtr++) {
                 int iteration = taskCtr + 1;
                 tasks.Add(factory.StartNew( () => {
@@ -28,15 +27,16 @@ namespace CancellationTokenExample
                             value = rnd.Next(0, 101);
                         }
                         if (value == 0) {
-                            source.Cancel();
+                            tokenSource.Cancel();
                             Console.WriteLine("Cancelling at task {0}", iteration);
                             break;
                         }
                         values[ctr-1] = value;
                     }
                     return values;
-                }, token));
+                }, tokenSource.Token));
             }
+
             try {
                 Task<double> fTask = factory.ContinueWhenAll(tasks.ToArray(),
                    (results) => {
@@ -50,7 +50,7 @@ namespace CancellationTokenExample
                         }
                     }
                     return sum/(double) n;
-                }, token);
+                }, tokenSource.Token);
                 Console.WriteLine("The mean is {0}.", fTask.Result);
             }
             catch (AggregateException ae) {
@@ -65,7 +65,7 @@ namespace CancellationTokenExample
                 }
             }
             finally {
-                source.Dispose();
+                tokenSource.Dispose();
             }
         }
     }
