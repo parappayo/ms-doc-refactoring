@@ -1,8 +1,8 @@
 
-./obj: *.cs
+./obj/Debug/netcoreapp2.1/*.dll: *.cs
 	dotnet build CancellationTokenExample.csproj
 
-build: ./obj
+build: ./obj/Debug/netcoreapp2.1/*.dll
 
 clean:
 	rm -rf ./obj
