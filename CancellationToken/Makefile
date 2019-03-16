@@ -1,6 +1,8 @@
 
-build:
+./obj: *.cs
 	dotnet build CancellationTokenExample.csproj
+
+build: ./obj
 
 clean:
 	rm -rf ./obj
