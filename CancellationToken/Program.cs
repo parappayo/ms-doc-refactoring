@@ -12,10 +12,33 @@ namespace CancellationTokenExample
 
         public int Next(int minValue, int maxValue)
         {
-            lock (Lock)
+            lock (this.Lock)
             {
-                return Random.Next(minValue, maxValue);
+                return this.Random.Next(minValue, maxValue);
             }
+        }
+    }
+
+    public interface IIntegerSequence
+    {
+        int Next();
+    }
+
+    public class RandomIntegers : IIntegerSequence
+    {
+        private SharedRandom SharedRandom = new SharedRandom();
+        public readonly int Min;
+        public readonly int Max;
+
+        public RandomIntegers(int min, int max)
+        {
+            this.Min = min;
+            this.Max = max;
+        }
+
+        public int Next()
+        {
+            return this.SharedRandom.Next(this.Min, this.Max + 1);
         }
     }
 
@@ -24,7 +47,7 @@ namespace CancellationTokenExample
         public static void Main()
         {
             var tokenSource = new CancellationTokenSource();
-            var sharedRandom = new SharedRandom();
+            var randomIntegers = new RandomIntegers(0, 100);
             int taskCount = 10;
 
             try
@@ -32,7 +55,7 @@ namespace CancellationTokenExample
                 int[] result = RunTasks(
                     () =>
                     {
-                        return GenerateValues(tokenSource, sharedRandom);
+                        return GenerateValues(tokenSource, randomIntegers);
                     },
                     (results) =>
                     {
@@ -133,7 +156,7 @@ namespace CancellationTokenExample
             return tasks;
         }
 
-        public static int[] GenerateValues(CancellationTokenSource tokenSource, SharedRandom sharedRandom)
+        public static int[] GenerateValues(CancellationTokenSource cancellationToken, IIntegerSequence integerSequence)
         {
             int value;
             int[] values = new int[10];
@@ -141,11 +164,11 @@ namespace CancellationTokenExample
             Console.WriteLine("Starting task {0}", Task.CurrentId);
             for (int ctr = 1; ctr <= 10; ctr++)
             {
-                value = sharedRandom.Next(0, 101);
+                value = integerSequence.Next();
 
                 if (value == 0)
                 {
-                    tokenSource.Cancel();
+                    cancellationToken.Cancel();
                     Console.WriteLine("Cancelling at task {0}", Task.CurrentId);
                     break;
                 }

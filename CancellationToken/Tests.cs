@@ -13,13 +13,13 @@ namespace CancellationTokenExample
         [Test]
         public void StartTasks_PopulatesTasks()
         {
-            var sharedRandom = new SharedRandom();
+            var randomIntegers = new RandomIntegers(0, 100);
             var tokenSource = new CancellationTokenSource();
             var taskFactory = new TaskFactory(tokenSource.Token);
             int taskCount = 10;
 
             var tasks = Program.StartTasks(
-                () => { return Program.GenerateValues(tokenSource, sharedRandom); },
+                () => { return Program.GenerateValues(tokenSource, randomIntegers); },
                 taskCount,
                 taskFactory,
                 tokenSource);
@@ -29,11 +29,11 @@ namespace CancellationTokenExample
         [Test]
         public void GenerateValues_ReturnsValues()
         {
-            var sharedRandom = new SharedRandom();
+            var randomIntegers = new RandomIntegers(0, 100);
             var tokenSource = new CancellationTokenSource();
             var factory = new TaskFactory(tokenSource.Token);
 
-            var values = Program.GenerateValues(tokenSource, sharedRandom);
+            var values = Program.GenerateValues(tokenSource, randomIntegers);
             Assert.IsNotEmpty(values);
         }
     }
