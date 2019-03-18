@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 
 using NUnit.Framework;
 
+using CancellationTokenExample.Math;
+
 namespace CancellationTokenExample
 {
     [TestFixture]
@@ -18,7 +20,7 @@ namespace CancellationTokenExample
             var taskFactory = new TaskFactory(tokenSource.Token);
             int taskCount = 10;
 
-            var tasks = Program.StartTasks(
+            var tasks = Tasks.Tasks.Start(
                 () => { return Program.GenerateValues(tokenSource, randomIntegers); },
                 taskCount,
                 taskFactory,
