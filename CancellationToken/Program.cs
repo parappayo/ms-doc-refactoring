@@ -29,20 +29,20 @@ namespace CancellationTokenExample
 
             try
             {
-                double result = RunTasks(
+                int[] result = RunTasks(
                     () =>
                     {
                         return GenerateValues(tokenSource, sharedRandom);
                     },
                     (results) =>
                     {
-                        Console.WriteLine("Calculating overall mean...");
-                        return CalculateMean(Flatten(results));
+                        return Flatten(results);
                     },
                     tokenSource,
                     taskCount);
 
-                Console.WriteLine("The mean is {0}.", result);
+                Console.WriteLine("Calculating overall mean...");
+                Console.WriteLine("The mean is {0}.", CalculateMean(result));
             }
             catch (AggregateException ae)
             {
