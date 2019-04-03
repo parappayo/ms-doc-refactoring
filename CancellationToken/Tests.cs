@@ -9,6 +9,22 @@ using CancellationTokenExample.Math;
 
 namespace CancellationTokenExample
 {
+    public class AllZeroesSequence : IIntegerSequence
+    {
+        public int Next()
+        {
+            return 0;
+        }
+    }
+
+    public class AllOnesSequence : IIntegerSequence
+    {
+        public int Next()
+        {
+            return 1;
+        }
+    }
+
     [TestFixture]
     public class Tests
     {
@@ -29,14 +45,33 @@ namespace CancellationTokenExample
         }
 
         [Test]
-        public void GenerateValues_ReturnsValues()
+        public void GenerateValues_HandlesAllZeroes()
         {
-            var randomIntegers = new RandomIntegers(0, 100);
-            var tokenSource = new CancellationTokenSource();
-            var factory = new TaskFactory(tokenSource.Token);
+            // var exception = Assert.Throws<AggregateException>(
+            //     delegate {
+            //         Program.GenerateValues(
+            //             new CancellationTokenSource(),
+            //             new AllZeroesSequence());
+            //     });
 
-            var values = Program.GenerateValues(tokenSource, randomIntegers);
+            var cancellationTokenSource = new CancellationTokenSource();
+
+            var values = Program.GenerateValues(
+                cancellationTokenSource,
+                new AllZeroesSequence());
+
+            Assert.IsTrue(cancellationTokenSource.IsCancellationRequested);
+        }
+
+        [Test]
+        public void GenerateValues_HandlesAllOnes()
+        {
+            var values = Program.GenerateValues(
+                new CancellationTokenSource(),
+                new AllOnesSequence());
+
             Assert.IsNotEmpty(values);
+            Array.ForEach(values, (value) => { Assert.AreEqual(value, 1); });
         }
     }
 }
