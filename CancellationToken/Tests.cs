@@ -45,15 +45,40 @@ namespace CancellationTokenExample
         }
 
         [Test]
+        public void GenerateValuesInParallel_HandlesAllZeroes()
+        {
+            var exception = Assert.Throws<AggregateException>(
+                delegate {
+                    Program.GenerateValuesInParallel(
+                        new AllZeroesSequence());
+                });
+
+            bool foundTaskCancelledException = false;
+
+            foreach (Exception innerException in exception.InnerExceptions)
+            {
+                if (innerException is TaskCanceledException)
+                {
+                    foundTaskCancelledException = true;
+                }
+            }
+
+            Assert.IsTrue(foundTaskCancelledException);
+        }
+
+        [Test]
+        public void GenerateValuesInParallel_HandlesAllOnes()
+        {
+            var values = Program.GenerateValuesInParallel(
+                new AllOnesSequence());
+
+            Assert.IsNotEmpty(values);
+            Array.ForEach(values, (value) => { Assert.AreEqual(value, 1); });
+        }
+
+        [Test]
         public void GenerateValues_HandlesAllZeroes()
         {
-            // var exception = Assert.Throws<AggregateException>(
-            //     delegate {
-            //         Program.GenerateValues(
-            //             new CancellationTokenSource(),
-            //             new AllZeroesSequence());
-            //     });
-
             var cancellationTokenSource = new CancellationTokenSource();
 
             var values = Program.GenerateValues(

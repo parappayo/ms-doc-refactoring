@@ -10,23 +10,9 @@ namespace CancellationTokenExample
     {
         public static void Main()
         {
-            var tokenSource = new CancellationTokenSource();
-            var randomIntegers = new RandomIntegers(0, 100);
-            int taskCount = 10;
-
             try
             {
-                int[] result = Tasks.Tasks.RunAll(
-                    () =>
-                    {
-                        return GenerateValues(tokenSource, randomIntegers);
-                    },
-                    (results) =>
-                    {
-                        return Tasks.Tasks.FlattenResults(results);
-                    },
-                    tokenSource,
-                    taskCount);
+                int[] result = GenerateValuesInParallel(new RandomIntegers(0, 100));
 
                 Console.WriteLine("Calculating overall mean...");
                 Console.WriteLine("The mean is {0}.", Math.Math.Mean(result));
@@ -49,6 +35,22 @@ namespace CancellationTokenExample
             }
         }
 
+        public static int[] GenerateValuesInParallel(IIntegerSequence integerSequence, int taskCount = 10)
+        {
+            var cancellationTokenSource = new CancellationTokenSource();
+
+            return Tasks.Tasks.RunAll(
+                () =>
+                {
+                    return GenerateValues(cancellationTokenSource, integerSequence);
+                },
+                (results) =>
+                {
+                    return Tasks.Tasks.FlattenResults(results);
+                },
+                cancellationTokenSource,
+                taskCount);
+        }
 
         public static int[] GenerateValues(CancellationTokenSource cancellationToken, IIntegerSequence integerSequence)
         {
