@@ -7,9 +7,9 @@ namespace BufferedGraphicsExample
     public class ExampleForm : Form
     {
         private readonly BufferedGraphicsContext _context;
-        private BufferedGraphics _grafx;
+        private BufferedGraphics _grafx; // TODO: rename
 
-        private byte _bufferingMode;
+        private byte _bufferingMode; // TODO: create an enum
         private byte _updateCount;
         private byte _clearBufferFrequency = 5;
 
@@ -83,11 +83,7 @@ namespace BufferedGraphicsExample
                     this.SetStyle( ControlStyles.OptimizedDoubleBuffer, false );
                 }
 
-                // Cause the background to be cleared and redraw.
-                _updateCount = 6;
-                DrawToBuffer(_grafx.Graphics);
-
-                this.Refresh();
+                ForceRefresh();
             }
 
             if( e.Button == MouseButtons.Left )
@@ -135,6 +131,7 @@ namespace BufferedGraphicsExample
             _grafx.Render(e.Graphics);
         }
 
+        // TODO: needs a better name - not so much refresh and restarting the cycle
         private void ForceRefresh()
         {
             _updateCount = _clearBufferFrequency;
@@ -144,13 +141,14 @@ namespace BufferedGraphicsExample
 
         private void DrawToBuffer(Graphics g)
         {
+            // TODO: separate concerns here, clearing is outside the scope of this method
             if( ++_updateCount > _clearBufferFrequency )
             {
                 _updateCount = 0;
                 _grafx.Graphics.FillRectangle(Brushes.Black, 0, 0, this.Width, this.Height);
             }
 
-            Random rnd = new Random();
+            Random rnd = new Random(); // TODO: don't alloc every frame
             for( int i=0; i<20; i++ )
             {
                 DrawRandomEllipse(g, rnd);
