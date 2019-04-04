@@ -190,10 +190,16 @@ namespace BufferedGraphicsExample
 
         private void DrawInfoStrings(Graphics g)
         {
-            g.DrawString("Buffering Mode: " + _bufferingMode.ToString(), new Font("Arial", 8), Brushes.White, 10,
-                10);
-            g.DrawString("Right-click to cycle buffering mode", new Font("Arial", 8), Brushes.White, 10, 22);
-            g.DrawString("Left-click to toggle timed display refresh", new Font("Arial", 8), Brushes.White, 10, 34);
+            var font = new Font("Arial", 8);
+            var x = 10;
+            var y = 10;
+            var spacing = 12;
+
+            g.DrawString("Buffering Mode: " + _bufferingMode.ToString(), font, Brushes.White, x, y);
+            y += spacing;
+            g.DrawString("Right-click to cycle buffering mode", font, Brushes.White, x, y);
+            y += spacing;
+            g.DrawString("Left-click to toggle timed display refresh", font, Brushes.White, x, y);
         }
     }
 }
