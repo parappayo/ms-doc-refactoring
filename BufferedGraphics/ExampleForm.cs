@@ -9,16 +9,16 @@ namespace BufferedGraphicsExample
         private readonly BufferedGraphicsContext _context;
         private BufferedGraphics _bufferedGraphics;
 
-        private byte _bufferingMode; // TODO: create an enum
         private byte _updateCount;
         private byte _clearBufferFrequency = 5;
 
-        private readonly string[] _bufferingModeStrings = {
-            "Draw to Form without OptimizedDoubleBufferring control style",
-            "Draw to Form using OptimizedDoubleBuffering control style",
-            "Draw to HDC for form"
+        enum BufferingMode {
+            DrawToForm,
+            DrawToFormWithDoubleBuffering,
+            DrawToHDC,
         };
 
+        private BufferingMode _bufferingMode;
         private readonly Timer _redrawTimer;
 
         public ExampleForm() : base()
@@ -35,7 +35,7 @@ namespace BufferedGraphicsExample
             };
             _redrawTimer.Tick += OnRedrawTimer;
 
-            _bufferingMode = 2;
+            _bufferingMode = BufferingMode.DrawToHDC;
             _updateCount = 0;
 
             // Retrieves the BufferedGraphicsContext for the
@@ -64,24 +64,11 @@ namespace BufferedGraphicsExample
         {
             if( e.Button == MouseButtons.Right )
             {
-                // Cycle the buffering mode.
-                if( ++_bufferingMode > 2 ) {
-                    _bufferingMode = 0;
-                }
+                NextBufferingMode();
 
-                // If the previous buffering mode used
-                // the OptimizedDoubleBuffering ControlStyle,
-                // disable the control style.
-                if( _bufferingMode == 1 ) {
-                    this.SetStyle( ControlStyles.OptimizedDoubleBuffer, true );
-                }
-
-                // If the current buffering mode uses
-                // the OptimizedDoubleBuffering ControlStyle,
-                // enable the control style.
-                if( _bufferingMode == 2 ) {
-                    this.SetStyle( ControlStyles.OptimizedDoubleBuffer, false );
-                }
+                this.SetStyle(
+                    ControlStyles.OptimizedDoubleBuffer,
+                    _bufferingMode == BufferingMode.DrawToFormWithDoubleBuffering);
 
                 ForceRefresh();
             }
@@ -94,16 +81,14 @@ namespace BufferedGraphicsExample
 
         private void OnRedrawTimer(object sender, EventArgs e)
         {
-            // Draw randomly positioned ellipses to the buffer.
             DrawToBuffer(_bufferedGraphics.Graphics);
 
-            // If in bufferingMode 2, draw to the form's HDC.
-            if( _bufferingMode == 2 ) {
-                // Render the graphics buffer to the form's HDC.
+            if( _bufferingMode == BufferingMode.DrawToHDC )
+            {
                 _bufferedGraphics.Render(Graphics.FromHwnd(this.Handle));
             }
-            else {
-                // If in bufferingMode 0 or 1, draw in the paint method.
+            else
+            {
                 this.Refresh();
             }
         }
@@ -157,6 +142,14 @@ namespace BufferedGraphicsExample
             DrawInfoStrings(g);
         }
 
+        private void NextBufferingMode()
+        {
+            if( ++_bufferingMode > BufferingMode.DrawToHDC )
+            {
+                _bufferingMode = 0;
+            }
+        }
+
         private void ToggleRedrawTimer()
         {
             if (_redrawTimer.Enabled)
@@ -197,7 +190,7 @@ namespace BufferedGraphicsExample
 
         private void DrawInfoStrings(Graphics g)
         {
-            g.DrawString("Buffering Mode: " + _bufferingModeStrings[_bufferingMode], new Font("Arial", 8), Brushes.White, 10,
+            g.DrawString("Buffering Mode: " + _bufferingMode.ToString(), new Font("Arial", 8), Brushes.White, 10,
                 10);
             g.DrawString("Right-click to cycle buffering mode", new Font("Arial", 8), Brushes.White, 10, 22);
             g.DrawString("Left-click to toggle timed display refresh", new Font("Arial", 8), Brushes.White, 10, 34);
