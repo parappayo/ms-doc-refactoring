@@ -7,7 +7,7 @@ namespace BufferedGraphicsExample
     public class ExampleForm : Form
     {
         private readonly BufferedGraphicsContext _context;
-        private BufferedGraphics _grafx; // TODO: rename
+        private BufferedGraphics _bufferedGraphics;
 
         private byte _bufferingMode; // TODO: create an enum
         private byte _updateCount;
@@ -53,11 +53,11 @@ namespace BufferedGraphicsExample
             // using the pixel format of the Graphics created by 
             // the Form.CreateGraphics() method, which returns a 
             // Graphics object that matches the pixel format of the form.
-            _grafx = _context.Allocate(this.CreateGraphics(),
+            _bufferedGraphics = _context.Allocate(this.CreateGraphics(),
                  new Rectangle( 0, 0, this.Width, this.Height ));
 
             // Draw the first frame to the buffer.
-            DrawToBuffer(_grafx.Graphics);
+            DrawToBuffer(_bufferedGraphics.Graphics);
         }
 
         private void MouseDownHandler(object sender, MouseEventArgs e)
@@ -95,12 +95,12 @@ namespace BufferedGraphicsExample
         private void OnRedrawTimer(object sender, EventArgs e)
         {
             // Draw randomly positioned ellipses to the buffer.
-            DrawToBuffer(_grafx.Graphics);
+            DrawToBuffer(_bufferedGraphics.Graphics);
 
             // If in bufferingMode 2, draw to the form's HDC.
             if( _bufferingMode == 2 ) {
                 // Render the graphics buffer to the form's HDC.
-                _grafx.Render(Graphics.FromHwnd(this.Handle));
+                _bufferedGraphics.Render(Graphics.FromHwnd(this.Handle));
             }
             else {
                 // If in bufferingMode 0 or 1, draw in the paint method.
@@ -113,13 +113,13 @@ namespace BufferedGraphicsExample
            // Re-create the graphics buffer for a new window size.
            _context.MaximumBuffer = new Size(this.Width+1, this.Height+1);
 
-            if( _grafx != null )
+            if( _bufferedGraphics != null )
             {
-                _grafx.Dispose();
-                _grafx = null;
+                _bufferedGraphics.Dispose();
+                _bufferedGraphics = null;
             }
 
-            _grafx = _context.Allocate(
+            _bufferedGraphics = _context.Allocate(
                 this.CreateGraphics(), 
                 new Rectangle( 0, 0, this.Width, this.Height ));
            
@@ -128,14 +128,14 @@ namespace BufferedGraphicsExample
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            _grafx.Render(e.Graphics);
+            _bufferedGraphics.Render(e.Graphics);
         }
 
         // TODO: needs a better name - not so much refresh and restarting the cycle
         private void ForceRefresh()
         {
             _updateCount = _clearBufferFrequency;
-            DrawToBuffer(_grafx.Graphics);
+            DrawToBuffer(_bufferedGraphics.Graphics);
             this.Refresh();
         }
 
@@ -145,7 +145,7 @@ namespace BufferedGraphicsExample
             if( ++_updateCount > _clearBufferFrequency )
             {
                 _updateCount = 0;
-                _grafx.Graphics.FillRectangle(Brushes.Black, 0, 0, this.Width, this.Height);
+                _bufferedGraphics.Graphics.FillRectangle(Brushes.Black, 0, 0, this.Width, this.Height);
             }
 
             Random rnd = new Random(); // TODO: don't alloc every frame
