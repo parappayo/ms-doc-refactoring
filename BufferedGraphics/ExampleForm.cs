@@ -38,23 +38,8 @@ namespace BufferedGraphicsExample
             _bufferingMode = BufferingMode.DrawToHDC;
             _updateCount = 0;
 
-            // Retrieves the BufferedGraphicsContext for the
-            // current application domain.
             _context = BufferedGraphicsManager.Current;
-
-            // Sets the maximum size for the primary graphics buffer
-            // of the buffered graphics context for the application
-            // domain.  Any allocation requests for a buffer larger 
-            // than this will create a temporary buffered graphics 
-            // context to host the graphics buffer.
-            _context.MaximumBuffer = new Size(this.Width+1, this.Height+1);
-
-            // Allocates a graphics buffer the size of this form
-            // using the pixel format of the Graphics created by 
-            // the Form.CreateGraphics() method, which returns a 
-            // Graphics object that matches the pixel format of the form.
-            _bufferedGraphics = _context.Allocate(this.CreateGraphics(),
-                 new Rectangle( 0, 0, this.Width, this.Height ));
+            ResizeBuffer();
 
             // Draw the first frame to the buffer.
             DrawToBuffer(_bufferedGraphics.Graphics);
@@ -95,25 +80,27 @@ namespace BufferedGraphicsExample
 
         private void OnResize(object sender, EventArgs e)
         {
-           // Re-create the graphics buffer for a new window size.
-           _context.MaximumBuffer = new Size(this.Width+1, this.Height+1);
-
-            if( _bufferedGraphics != null )
-            {
-                _bufferedGraphics.Dispose();
-                _bufferedGraphics = null;
-            }
-
-            _bufferedGraphics = _context.Allocate(
-                this.CreateGraphics(), 
-                new Rectangle( 0, 0, this.Width, this.Height ));
-           
-           ForceRefresh();
+            ResizeBuffer();
+            ForceRefresh();
         }
 
         protected override void OnPaint(PaintEventArgs e)
         {
             _bufferedGraphics.Render(e.Graphics);
+        }
+
+        private void ResizeBuffer()
+        {
+            _context.MaximumBuffer = new Size(this.Width+1, this.Height+1);
+
+            if( _bufferedGraphics != null )
+            {
+                _bufferedGraphics.Dispose();
+            }
+
+            _bufferedGraphics = _context.Allocate(
+                this.CreateGraphics(), 
+                new Rectangle( 0, 0, this.Width, this.Height ));
         }
 
         // TODO: needs a better name - not so much refresh and restarting the cycle
