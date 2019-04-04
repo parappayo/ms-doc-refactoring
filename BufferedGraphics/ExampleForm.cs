@@ -10,7 +10,8 @@ namespace BufferedGraphicsExample
         private BufferedGraphics _grafx;
 
         private byte _bufferingMode;
-        private byte _count;
+        private byte _updateCount;
+        private byte _clearBufferFrequency = 5;
 
         private readonly string[] _bufferingModeStrings = {
             "Draw to Form without OptimizedDoubleBufferring control style",
@@ -35,7 +36,7 @@ namespace BufferedGraphicsExample
             _redrawTimer.Tick += OnRedrawTimer;
 
             _bufferingMode = 2;
-            _count = 0;
+            _updateCount = 0;
 
             // Retrieves the BufferedGraphicsContext for the
             // current application domain.
@@ -83,7 +84,7 @@ namespace BufferedGraphicsExample
                 }
 
                 // Cause the background to be cleared and redraw.
-                _count = 6;
+                _updateCount = 6;
                 DrawToBuffer(_grafx.Graphics);
 
                 this.Refresh();
@@ -126,40 +127,36 @@ namespace BufferedGraphicsExample
                 this.CreateGraphics(), 
                 new Rectangle( 0, 0, this.Width, this.Height ));
            
-           // Cause the background to be cleared and redraw.
-           _count = 6;
-           DrawToBuffer(_grafx.Graphics);
-           this.Refresh();
-        }
-
-        private void DrawToBuffer(Graphics g)
-        {
-            // Clear the graphics buffer every five updates.
-            if( ++_count > 5 )
-            {
-                _count = 0;
-                _grafx.Graphics.FillRectangle(Brushes.Black, 0, 0, this.Width, this.Height);
-            }
-
-            // Draw randomly positioned and colored ellipses.
-            Random rnd = new Random();
-            for( int i=0; i<20; i++ )
-            {
-                int px = rnd.Next(20,this.Width-40);
-                int py = rnd.Next(20,this.Height-40);
-                g.DrawEllipse(new Pen(Color.FromArgb(rnd.Next(0, 255), rnd.Next(0,255), rnd.Next(0,255)), 1),
-                    px, py, px+rnd.Next(0, this.Width-px-20), py+rnd.Next(0, this.Height-py-20));
-            }
-
-            // Draw information strings.
-            g.DrawString("Buffering Mode: "+_bufferingModeStrings[_bufferingMode], new Font("Arial", 8), Brushes.White, 10, 10);
-            g.DrawString("Right-click to cycle buffering mode", new Font("Arial", 8), Brushes.White, 10, 22);
-            g.DrawString("Left-click to toggle timed display refresh", new Font("Arial", 8), Brushes.White, 10, 34);
+           ForceRefresh();
         }
 
         protected override void OnPaint(PaintEventArgs e)
         {
             _grafx.Render(e.Graphics);
+        }
+
+        private void ForceRefresh()
+        {
+            _updateCount = _clearBufferFrequency;
+            DrawToBuffer(_grafx.Graphics);
+            this.Refresh();
+        }
+
+        private void DrawToBuffer(Graphics g)
+        {
+            if( ++_updateCount > _clearBufferFrequency )
+            {
+                _updateCount = 0;
+                _grafx.Graphics.FillRectangle(Brushes.Black, 0, 0, this.Width, this.Height);
+            }
+
+            Random rnd = new Random();
+            for( int i=0; i<20; i++ )
+            {
+                DrawRandomEllipse(g, rnd);
+            }
+
+            DrawInfoStrings(g);
         }
 
         private void ToggleRedrawTimer()
@@ -172,6 +169,33 @@ namespace BufferedGraphicsExample
             {
                 _redrawTimer.Start();
             }
+        }
+
+        private Color RandomColor(Random random)
+        {
+            return Color.FromArgb(random.Next(0, 255), random.Next(0, 255), random.Next(0, 255));
+        }
+
+        private void DrawRandomEllipse(Graphics g, Random rnd)
+        {
+            int px = rnd.Next(20, this.Width - 40);
+            int py = rnd.Next(20, this.Height - 40);
+            int penWidth = 1;
+
+            g.DrawEllipse(
+                new Pen(RandomColor(rnd), penWidth),
+                px,
+                py,
+                px + rnd.Next(0, this.Width - px - 20),
+                py + rnd.Next(0, this.Height - py - 20));
+        }
+
+        private void DrawInfoStrings(Graphics g)
+        {
+            g.DrawString("Buffering Mode: " + _bufferingModeStrings[_bufferingMode], new Font("Arial", 8), Brushes.White, 10,
+                10);
+            g.DrawString("Right-click to cycle buffering mode", new Font("Arial", 8), Brushes.White, 10, 22);
+            g.DrawString("Left-click to toggle timed display refresh", new Font("Arial", 8), Brushes.White, 10, 34);
         }
     }
 }
