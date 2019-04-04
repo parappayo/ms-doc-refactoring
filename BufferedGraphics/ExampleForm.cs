@@ -10,7 +10,7 @@ namespace BufferedGraphicsExample
         private BufferedGraphics _bufferedGraphics;
 
         private byte _updateCount;
-        private byte _clearBufferFrequency = 5;
+        private byte _clearBufferInterval = 5;
 
         enum BufferingMode {
             DrawToForm,
@@ -20,6 +20,7 @@ namespace BufferedGraphicsExample
 
         private BufferingMode _bufferingMode;
         private readonly Timer _redrawTimer;
+        private readonly Random _random = new Random();
 
         public ExampleForm() : base()
         {
@@ -39,9 +40,7 @@ namespace BufferedGraphicsExample
 
             _context = BufferedGraphicsManager.Current;
             ResizeBuffer();
-
-            // Draw the first frame to the buffer.
-            DrawToBuffer(_bufferedGraphics.Graphics);
+            UpdateBuffer();
         }
 
         private void MouseDownHandler(object sender, MouseEventArgs e)
@@ -54,7 +53,7 @@ namespace BufferedGraphicsExample
                     ControlStyles.OptimizedDoubleBuffer,
                     _bufferingMode == BufferingMode.DrawToFormWithDoubleBuffering);
 
-                ForceRefresh();
+                Clear();
             }
 
             if( e.Button == MouseButtons.Left )
@@ -65,7 +64,7 @@ namespace BufferedGraphicsExample
 
         private void OnRedrawTimer(object sender, EventArgs e)
         {
-            DrawToBuffer(_bufferedGraphics.Graphics);
+            UpdateBuffer();
 
             if( _bufferingMode == BufferingMode.DrawToHDC )
             {
@@ -80,7 +79,7 @@ namespace BufferedGraphicsExample
         private void OnResize(object sender, EventArgs e)
         {
             ResizeBuffer();
-            ForceRefresh();
+            Clear();
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -102,28 +101,30 @@ namespace BufferedGraphicsExample
                 new Rectangle( 0, 0, this.Width, this.Height ));
         }
 
-        // TODO: needs a better name - not so much refresh and restarting the cycle
-        private void ForceRefresh()
+        private void Clear()
         {
-            _updateCount = _clearBufferFrequency;
-            DrawToBuffer(_bufferedGraphics.Graphics);
+            _updateCount = _clearBufferInterval;
+            UpdateBuffer();
             this.Refresh();
         }
 
-        private void DrawToBuffer(Graphics g)
+        private void UpdateBuffer()
         {
-            // TODO: separate concerns here, clearing is outside the scope of this method
-            if( ++_updateCount > _clearBufferFrequency )
+            if( ++_updateCount > _clearBufferInterval )
             {
                 _updateCount = 0;
                 ClearBuffer(_bufferedGraphics, _context, Brushes.Black);
-                DrawInfoStrings(g);
+                DrawInfoStrings(_bufferedGraphics.Graphics);
             }
 
-            Random rnd = new Random(); // TODO: don't alloc every frame
-            for( int i=0; i<20; i++ )
+            DrawRandomEllipses(_bufferedGraphics.Graphics, _random, 20);
+        }
+
+        private void DrawRandomEllipses(Graphics graphics, Random random, int count)
+        {
+            for (int i = 0; i < count; i++)
             {
-                DrawRandomEllipse(g, rnd);
+                DrawRandomEllipse(_bufferedGraphics.Graphics, random);
             }
         }
 
