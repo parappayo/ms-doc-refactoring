@@ -23,10 +23,9 @@ namespace BufferedGraphicsExample
 
         public ExampleForm() : base()
         {
-            // Configure the Form for this example.
-            this.Text = "User double buffering";
-            this.MouseDown += new MouseEventHandler(this.MouseDownHandler);
-            this.Resize += new EventHandler(this.OnResize);
+            this.Text = "Double Buffering Example";
+            this.MouseDown += this.MouseDownHandler;
+            this.Resize += this.OnResize;
             this.SetStyle( ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true );
 
             _redrawTimer = new Timer
