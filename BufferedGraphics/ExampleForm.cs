@@ -131,6 +131,7 @@ namespace BufferedGraphicsExample
             {
                 _updateCount = 0;
                 _bufferedGraphics.Graphics.FillRectangle(Brushes.Black, 0, 0, this.Width, this.Height);
+                DrawInfoStrings(g);
             }
 
             Random rnd = new Random(); // TODO: don't alloc every frame
@@ -138,8 +139,6 @@ namespace BufferedGraphicsExample
             {
                 DrawRandomEllipse(g, rnd);
             }
-
-            DrawInfoStrings(g);
         }
 
         private void NextBufferingMode()
