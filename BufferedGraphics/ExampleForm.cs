@@ -6,19 +6,19 @@ namespace BufferedGraphicsExample
 {
     public class ExampleForm : Form
     {
-        private BufferedGraphicsContext context;
-        private BufferedGraphics grafx;
+        private readonly BufferedGraphicsContext _context;
+        private BufferedGraphics _grafx;
 
-        private byte bufferingMode;
-        private byte count;
+        private byte _bufferingMode;
+        private byte _count;
 
-        private string[] bufferingModeStrings = {
+        private readonly string[] _bufferingModeStrings = {
             "Draw to Form without OptimizedDoubleBufferring control style",
             "Draw to Form using OptimizedDoubleBuffering control style",
             "Draw to HDC for form"
         };
 
-        private readonly Timer redrawTimer;
+        private readonly Timer _redrawTimer;
 
         public ExampleForm() : base()
         {
@@ -28,35 +28,35 @@ namespace BufferedGraphicsExample
             this.Resize += new EventHandler(this.OnResize);
             this.SetStyle( ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true );
 
-            redrawTimer = new Timer
+            _redrawTimer = new Timer
             {
                 Interval = 200
             };
-            redrawTimer.Tick += OnRedrawTimer;
+            _redrawTimer.Tick += OnRedrawTimer;
 
-            bufferingMode = 2;
-            count = 0;
+            _bufferingMode = 2;
+            _count = 0;
 
             // Retrieves the BufferedGraphicsContext for the
             // current application domain.
-            context = BufferedGraphicsManager.Current;
+            _context = BufferedGraphicsManager.Current;
 
             // Sets the maximum size for the primary graphics buffer
             // of the buffered graphics context for the application
             // domain.  Any allocation requests for a buffer larger 
             // than this will create a temporary buffered graphics 
             // context to host the graphics buffer.
-            context.MaximumBuffer = new Size(this.Width+1, this.Height+1);
+            _context.MaximumBuffer = new Size(this.Width+1, this.Height+1);
 
             // Allocates a graphics buffer the size of this form
             // using the pixel format of the Graphics created by 
             // the Form.CreateGraphics() method, which returns a 
             // Graphics object that matches the pixel format of the form.
-            grafx = context.Allocate(this.CreateGraphics(),
+            _grafx = _context.Allocate(this.CreateGraphics(),
                  new Rectangle( 0, 0, this.Width, this.Height ));
 
             // Draw the first frame to the buffer.
-            DrawToBuffer(grafx.Graphics);
+            DrawToBuffer(_grafx.Graphics);
         }
 
         private void MouseDownHandler(object sender, MouseEventArgs e)
@@ -64,27 +64,27 @@ namespace BufferedGraphicsExample
             if( e.Button == MouseButtons.Right )
             {
                 // Cycle the buffering mode.
-                if( ++bufferingMode > 2 ) {
-                    bufferingMode = 0;
+                if( ++_bufferingMode > 2 ) {
+                    _bufferingMode = 0;
                 }
 
                 // If the previous buffering mode used
                 // the OptimizedDoubleBuffering ControlStyle,
                 // disable the control style.
-                if( bufferingMode == 1 ) {
+                if( _bufferingMode == 1 ) {
                     this.SetStyle( ControlStyles.OptimizedDoubleBuffer, true );
                 }
 
                 // If the current buffering mode uses
                 // the OptimizedDoubleBuffering ControlStyle,
-                // enabke the control style.
-                if( bufferingMode == 2 ) {
+                // enable the control style.
+                if( _bufferingMode == 2 ) {
                     this.SetStyle( ControlStyles.OptimizedDoubleBuffer, false );
                 }
 
                 // Cause the background to be cleared and redraw.
-                count = 6;
-                DrawToBuffer(grafx.Graphics);
+                _count = 6;
+                DrawToBuffer(_grafx.Graphics);
 
                 this.Refresh();
             }
@@ -98,12 +98,12 @@ namespace BufferedGraphicsExample
         private void OnRedrawTimer(object sender, EventArgs e)
         {
             // Draw randomly positioned ellipses to the buffer.
-            DrawToBuffer(grafx.Graphics);
+            DrawToBuffer(_grafx.Graphics);
 
             // If in bufferingMode 2, draw to the form's HDC.
-            if( bufferingMode == 2 ) {
+            if( _bufferingMode == 2 ) {
                 // Render the graphics buffer to the form's HDC.
-                grafx.Render(Graphics.FromHwnd(this.Handle));
+                _grafx.Render(Graphics.FromHwnd(this.Handle));
             }
             else {
                 // If in bufferingMode 0 or 1, draw in the paint method.
@@ -114,31 +114,31 @@ namespace BufferedGraphicsExample
         private void OnResize(object sender, EventArgs e)
         {
            // Re-create the graphics buffer for a new window size.
-           context.MaximumBuffer = new Size(this.Width+1, this.Height+1);
+           _context.MaximumBuffer = new Size(this.Width+1, this.Height+1);
 
-            if( grafx != null )
+            if( _grafx != null )
             {
-                grafx.Dispose();
-                grafx = null;
+                _grafx.Dispose();
+                _grafx = null;
             }
 
-            grafx = context.Allocate(
+            _grafx = _context.Allocate(
                 this.CreateGraphics(), 
                 new Rectangle( 0, 0, this.Width, this.Height ));
            
            // Cause the background to be cleared and redraw.
-           count = 6;
-           DrawToBuffer(grafx.Graphics);
+           _count = 6;
+           DrawToBuffer(_grafx.Graphics);
            this.Refresh();
         }
 
         private void DrawToBuffer(Graphics g)
         {
             // Clear the graphics buffer every five updates.
-            if( ++count > 5 )
+            if( ++_count > 5 )
             {
-                count = 0;
-                grafx.Graphics.FillRectangle(Brushes.Black, 0, 0, this.Width, this.Height);
+                _count = 0;
+                _grafx.Graphics.FillRectangle(Brushes.Black, 0, 0, this.Width, this.Height);
             }
 
             // Draw randomly positioned and colored ellipses.
@@ -152,25 +152,25 @@ namespace BufferedGraphicsExample
             }
 
             // Draw information strings.
-            g.DrawString("Buffering Mode: "+bufferingModeStrings[bufferingMode], new Font("Arial", 8), Brushes.White, 10, 10);
+            g.DrawString("Buffering Mode: "+_bufferingModeStrings[_bufferingMode], new Font("Arial", 8), Brushes.White, 10, 10);
             g.DrawString("Right-click to cycle buffering mode", new Font("Arial", 8), Brushes.White, 10, 22);
             g.DrawString("Left-click to toggle timed display refresh", new Font("Arial", 8), Brushes.White, 10, 34);
         }
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            grafx.Render(e.Graphics);
+            _grafx.Render(e.Graphics);
         }
 
         private void ToggleRedrawTimer()
         {
-            if (redrawTimer.Enabled)
+            if (_redrawTimer.Enabled)
             {
-                redrawTimer.Stop();
+                _redrawTimer.Stop();
             }
             else
             {
-                redrawTimer.Start();
+                _redrawTimer.Start();
             }
         }
     }
