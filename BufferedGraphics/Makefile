@@ -1,5 +1,5 @@
 
-PROJECT?=BufferedGraphics
+PROJECT?=BufferedGraphicsExample
 FRAMEWORK?=net472
 CONFIGURATION?=Debug
 
