@@ -176,18 +176,25 @@ namespace BufferedGraphicsExample
             return Color.FromArgb(random.Next(0, 255), random.Next(0, 255), random.Next(0, 255));
         }
 
+        private Rectangle RandomRectangle(Random random, int margin, int minSize)
+        {
+            int px = random.Next(margin, this.Width - margin - minSize);
+            int py = random.Next(margin, this.Height - margin - minSize);
+
+            return new Rectangle(
+                px, py,
+                px + random.Next(0, this.Width - px - margin),
+                py + random.Next(0, this.Height - py - margin));
+        }
+
         private void DrawRandomEllipse(Graphics g, Random rnd)
         {
-            int px = rnd.Next(20, this.Width - 40);
-            int py = rnd.Next(20, this.Height - 40);
+            var randomRectangle = RandomRectangle(rnd, 20, 20);
             int penWidth = 1;
 
             g.DrawEllipse(
                 new Pen(RandomColor(rnd), penWidth),
-                px,
-                py,
-                px + rnd.Next(0, this.Width - px - 20),
-                py + rnd.Next(0, this.Height - py - 20));
+                randomRectangle);
         }
 
         private void DrawInfoStrings(Graphics g)
