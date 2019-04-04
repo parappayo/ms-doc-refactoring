@@ -117,21 +117,17 @@ namespace BufferedGraphicsExample
                 DrawInfoStrings(_bufferedGraphics.Graphics);
             }
 
-            DrawRandomEllipses(_bufferedGraphics.Graphics, _random, 20);
-        }
-
-        private void DrawRandomEllipses(Graphics graphics, Random random, int count)
-        {
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < 20; i++)
             {
-                DrawRandomEllipse(_bufferedGraphics.Graphics, random);
+                DrawRandomEllipse(_bufferedGraphics.Graphics, _random);
             }
         }
 
         private void ClearBuffer(BufferedGraphics graphics, BufferedGraphicsContext context, Brush clearColor)
         {
-            var clearRect = new Rectangle(new Point(0, 0), context.MaximumBuffer);
-            graphics.Graphics.FillRectangle(clearColor, clearRect);
+            graphics.Graphics.FillRectangle(
+                clearColor,
+                new Rectangle(new Point(0, 0), context.MaximumBuffer));
         }
 
         private void NextBufferingMode()
