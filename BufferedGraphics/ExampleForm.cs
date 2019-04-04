@@ -116,7 +116,7 @@ namespace BufferedGraphicsExample
             if( ++_updateCount > _clearBufferFrequency )
             {
                 _updateCount = 0;
-                _bufferedGraphics.Graphics.FillRectangle(Brushes.Black, 0, 0, this.Width, this.Height);
+                ClearBuffer(_bufferedGraphics, _context, Brushes.Black);
                 DrawInfoStrings(g);
             }
 
@@ -125,6 +125,12 @@ namespace BufferedGraphicsExample
             {
                 DrawRandomEllipse(g, rnd);
             }
+        }
+
+        private void ClearBuffer(BufferedGraphics graphics, BufferedGraphicsContext context, Brush clearColor)
+        {
+            var clearRect = new Rectangle(new Point(0, 0), context.MaximumBuffer);
+            graphics.Graphics.FillRectangle(clearColor, clearRect);
         }
 
         private void NextBufferingMode()
