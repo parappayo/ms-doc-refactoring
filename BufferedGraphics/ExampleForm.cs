@@ -1,5 +1,4 @@
 using System;
-using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -19,7 +18,7 @@ namespace BufferedGraphicsExample
             "Draw to HDC for form"
         };
 
-        private System.Windows.Forms.Timer timer1;
+        private readonly Timer redrawTimer;
 
         public ExampleForm() : base()
         {
@@ -29,10 +28,11 @@ namespace BufferedGraphicsExample
             this.Resize += new EventHandler(this.OnResize);
             this.SetStyle( ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true );
 
-            // Configure a timer to draw graphics updates.
-            timer1 = new System.Windows.Forms.Timer();
-            timer1.Interval = 200;
-            timer1.Tick += new EventHandler(this.OnTimer);
+            redrawTimer = new Timer
+            {
+                Interval = 200
+            };
+            redrawTimer.Tick += OnRedrawTimer;
 
             bufferingMode = 2;
             count = 0;
@@ -88,18 +88,14 @@ namespace BufferedGraphicsExample
 
                 this.Refresh();
             }
-            else
+
+            if( e.Button == MouseButtons.Left )
             {
-                // Toggle whether the redraw timer is active.
-                if( timer1.Enabled ) {
-                    timer1.Stop();
-                } else {
-                    timer1.Start();
-                }
+                ToggleRedrawTimer();
             }
         }
 
-        private void OnTimer(object sender, EventArgs e)
+        private void OnRedrawTimer(object sender, EventArgs e)
         {
             // Draw randomly positioned ellipses to the buffer.
             DrawToBuffer(grafx.Graphics);
@@ -164,6 +160,18 @@ namespace BufferedGraphicsExample
         protected override void OnPaint(PaintEventArgs e)
         {
             grafx.Render(e.Graphics);
+        }
+
+        private void ToggleRedrawTimer()
+        {
+            if (redrawTimer.Enabled)
+            {
+                redrawTimer.Stop();
+            }
+            else
+            {
+                redrawTimer.Start();
+            }
         }
     }
 }
