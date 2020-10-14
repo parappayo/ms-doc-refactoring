@@ -19,3 +19,9 @@ test:
 
 run: build
 	./${BIN}/${PROJECT}.exe
+
+build-mono: *.cs
+	mono-csc *.cs -r:System.Windows.Forms.dll -r:System.Drawing.dll -out:${PROJECT}.exe
+
+run-mono: build-mono
+	mono ${PROJECT}.exe
